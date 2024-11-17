@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+  db:
+    restart: unless-stopped
+    image: postgres:16
+    ports:
+      - 5432:${DB_PORT}
+    volumes:
+      - ./persistent_data/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    env_file:
+      - .env
+    networks:
+      - app-network
+
+  web:
+    restart: unless-stopped
+    build:
+      context: .
+    depends_on:
+      - db
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - 8000:8000
+    volumes:
+      - ./src/:/src
+      - ${PERSISTENT_DATA_STATIC}:${STATIC_ROOT}
+      - ${PERSISTENT_DATA_MEDIA}:${MEDIA_ROOT}
+    env_file:
+      - .env
+    networks:
+      - app-network
+
+networks:
+    app-network:
+        external: true

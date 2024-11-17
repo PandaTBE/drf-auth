@@ -1,0 +1,15 @@
+version: "3.9"
+
+service:
+  web:
+    restart: unless-stopped
+    build:
+      context: .
+    command: gunicorn core.wsgi:application -w 2 -b :8000 -t 120
+    ports:
+      - 8000:8000
+    volumes:
+      - ${PERSISTENT_DATA_STATIC}:${STATIC_ROOT}
+      - ${PERSISTENT_DATA_MEDIA}:${MEDIA_ROOT}
+    env_file:
+      - .env
